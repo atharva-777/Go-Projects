@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>URL Shortener</title>
+    <style>
+        body{font-family:system-ui,Segoe UI,Roboto,Helvetica Neue,Arial;margin:24px}
+        form{max-width:640px}
+        input{width:100%;padding:8px;margin:8px 0}
+        button{padding:8px 12px}
+        .result{margin-top:12px}
+    </style>
+</head>
+<body>
+    <h1>URL Shortener</h1>
+    <form id="form">
+        <label for="url">Enter a long URL</label>
+        <input id="url" type="url" placeholder="https://example.com" required />
+        <button type="submit">Shorten</button>
+    </form>
+
+    <div class="result" id="result" aria-live="polite"></div>
+
+    <script>
+        const form = document.getElementById('form');
+        const result = document.getElementById('result');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            result.textContent = 'Creating...';
+            const url = document.getElementById('url').value;
+            try {
+                const res = await fetch('/api/shorten', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                if (!res.ok) throw new Error(res.statusText);
+                const data = await res.json();
+                result.innerHTML = `<div>Short URL: <a href="${data.short_url}" target="_blank">${data.short_url}</a></div><div>Code: ${data.code}</div><div>Original: ${data.original}</div>`;
+            } catch (err) {
+                result.textContent = 'Error: ' + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
