@@ -15,6 +15,8 @@ var s = store.New()
 
 func main() {
 	mux := http.NewServeMux()
+	// serve static UI at /ui/
+	mux.Handle("/ui/", http.StripPrefix("/ui/", http.FileServer(http.Dir("static"))))
 
 	mux.HandleFunc("/api/shorten", shortenHandler)
 	mux.HandleFunc("/api/url/", apiURLHandler) // GET/PUT/DELETE
