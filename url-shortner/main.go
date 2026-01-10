@@ -11,7 +11,15 @@ import (
 	"github.com/atharva-777/go-projects/url-shortner/store"
 )
 
-var s = store.New()
+var s *store.Store
+
+func init() {
+	var err error
+	s, err = store.New("urls.db")
+	if err != nil {
+		log.Fatalf("failed to initialize store: %v", err)
+	}
+}
 
 func main() {
 	mux := http.NewServeMux()
@@ -41,7 +49,12 @@ func shortenHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
-	u := s.Create(req.URL)
+	u, err := s.Create(req.URL)
+	if err != nil {
+		log.Printf("create error: %v", err)
+		http.Error(w, "failed to create short URL", http.StatusInternalServerError)
+		return
+	}
 	resp := map[string]interface{}{
 		"code":      u.Code,
 		"short_url": fmt.Sprintf("http://%s/%s", r.Host, u.Code),
@@ -118,6 +131,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	s.IncrementVisits(code)
+	if err := s.IncrementVisits(code); err != nil {
+		log.Printf("increment visits error: %v", err)
+	}
 	http.Redirect(w, r, u.Original, http.StatusFound)
 }
