@@ -3,9 +3,12 @@ package store
 import "testing"
 
 func TestCreate(t *testing.T) {
-	s := New()
-	u := s.Create(("https://exmaple.com"))
-	if u.Original != "https://exmaple.com" {
+	s, _ := New(":memory:")
+	u, err := s.Create("https://example.com")
+	if err != nil {
+		t.Fatalf("create error: %v", err)
+	}
+	if u.Original != "https://example.com" {
 		t.Fatal("mismatch")
 	}
 	if u.Code == "" {
@@ -14,8 +17,8 @@ func TestCreate(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	s := New()
-	created := s.Create("https://exmaple.com")
+	s, _ := New(":memory:")
+	created, _ := s.Create("https://example.com")
 	got := s.Get(created.Code)
 	if got == nil {
 		t.Fatal("not found")
@@ -26,8 +29,8 @@ func TestGet(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	s := New()
-	u := s.Create("https://example.com")
+	s, _ := New(":memory:")
+	u, _ := s.Create("https://example.com")
 	ok := s.Update(u.Code, "https://new.com")
 	if !ok {
 		t.Fatal("update failed")
@@ -39,8 +42,8 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	s := New()
-	u := s.Create("https://example.com")
+	s, _ := New(":memory:")
+	u, _ := s.Create("https://example.com")
 	ok := s.Delete(u.Code)
 	if !ok {
 		t.Fatal("delete failed")
@@ -51,10 +54,13 @@ func TestDelete(t *testing.T) {
 }
 
 func TestIncrementVisits(t *testing.T) {
-	s := New()
-	u := s.Create("https://example.com")
-	s.IncrementVisits(u.Code)
+	s, _ := New(":memory:")
+	u, _ := s.Create("https://example.com")
+	err := s.IncrementVisits(u.Code)
+	if err != nil {
+		t.Fatalf("increment error: %v", err)
+	}
 	if got := s.Get(u.Code); got.Visits != 1 {
-		t.Fatal("visits not increamented")
+		t.Fatal("visits not incremented")
 	}
 }

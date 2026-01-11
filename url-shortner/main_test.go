@@ -4,7 +4,17 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/atharva-777/go-projects/url-shortner/store"
 )
+
+func init() {
+	var err error
+	s, err = store.New(":memory:")
+	if err != nil {
+		panic(err)
+	}
+}
 
 func TestShortenHandler(t *testing.T) {
 	req := httptest.NewRequest("POST", "/api/shorten",
