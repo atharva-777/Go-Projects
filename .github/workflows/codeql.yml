@@ -1,0 +1,58 @@
+name: "CodeQL Advanced"
+
+on:
+  push:
+    branches: [ "master" ]  # Change to "main" if that's your default branch
+    paths:
+      - 'url-shortner/**'
+      - 'github-user-activity/**'
+      - 'Task Tracker/**'  # Add other projects as needed
+      - '.github/workflows/codeql.yml'
+  pull_request:
+    branches: [ "master" ]  # Change to "main" if needed
+    paths:
+      - 'url-shortner/**'
+      - 'github-user-activity/**'
+      - 'Task Tracker/**'  # Add other projects as needed
+      - '.github/workflows/codeql.yml'
+  schedule:
+    - cron: '21 2 * * 6'
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - language: go
+          build-mode: autobuild
+        # Removed 'actions' language since it's not needed for Go projects
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Add Go setup for better analysis
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'  # Match your go.mod version
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v4
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v4
+      with:
+        category: "/language:${{matrix.language}}"
