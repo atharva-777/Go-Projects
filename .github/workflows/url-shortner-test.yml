@@ -1,0 +1,22 @@
+name: URL Shortner Tests
+on:
+  push:
+    paths:
+      - 'url-shortner/**'
+  pull_request:
+    paths:
+      - 'url-shortner/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./url-shortner
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - run: go test -v ./...
+      - run: go test -cover ./...
